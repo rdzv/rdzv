@@ -12,13 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def fetch(url):
     if not url.startswith(('https://api.github.com/repos/astral-sh/python-build-standalone/',
-                           'https://dist.torproject.org/')):
+                           'https://dist.torproject.org/', 'https://pypi.org/pypi/cffi/')):
         raise ValueError('Unexpected update origin')
     headers = {'User-Agent': 'Rendezvous-Update-Checker'}
     if url.startswith('https://api.github.com/') and os.environ.get('GH_TOKEN'):
         headers['Authorization'] = 'Bearer ' + os.environ['GH_TOKEN']
     request = urllib.request.Request(url, headers=headers)
-    # Only the two fixed upstream origins above are permitted.
+    # Only the fixed upstream origins above are permitted.
     with urllib.request.urlopen(request, timeout=180) as response:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         return response.read()
 
@@ -46,6 +46,23 @@ def refresh_python(inputs, release):
     inputs.update(python=selected, python_version=versions.pop(), python_release=release['tag_name'])
 
 
+def include_cffi_source(lock):
+    """ARMv7 compiles CFFI; resolve metadata without running an upstream sdist."""
+    match = re.search(r'^cffi==(\d+(?:\.\d+)+) \\$', lock, re.MULTILINE)
+    if not match:
+        raise ValueError('CFFI is missing from the resolved runtime')
+    version = match[1]
+    metadata = json.loads(fetch(f'https://pypi.org/pypi/cffi/{version}/json'))
+    sources = [item for item in metadata['urls'] if item['packagetype'] == 'sdist' and
+               item['filename'] == f'cffi-{version}.tar.gz']
+    if len(sources) != 1 or not re.fullmatch('[a-f0-9]{64}', sources[0]['digests']['sha256']):
+        raise ValueError('Missing CFFI source digest')
+    digest = sources[0]['digests']['sha256']
+    if '--hash=sha256:' + digest in lock:
+        return lock
+    return lock.replace(match[0] + '\n', match[0] + '\n    --hash=sha256:' + digest + ' \\\n', 1)
+
+
 def main():
     path = ROOT / 'packaging/inputs.json'
     original = json.loads(path.read_text())
@@ -71,6 +88,8 @@ def main():
                     '--no-emit-index-url', '--no-emit-trusted-host', '--index-url', 'https://pypi.org/simple',
                     '--pip-args=--only-binary=:all:', '--output-file', 'requirements.lock',
                     'pyproject.toml'], cwd=ROOT, env=environment, check=True, timeout=600)
+    lock = ROOT / 'requirements.lock'
+    lock.write_text(include_cffi_source(lock.read_text()))
     if inputs != original:
         path.write_text(json.dumps(inputs, indent=2) + '\n')
 

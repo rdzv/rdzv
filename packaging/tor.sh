@@ -25,5 +25,5 @@ while read -r name arrow library rest; do
   case "$library" in /lib/*|/usr/lib/*) ;; *) exit 1 ;; esac
   cp -L "$library" "/out/tor/lib/$name"
 done < /tmp/libraries
-ln -s "ld-musl-$MUSL_ARCH.so.1" "/out/tor/lib/libc.musl-$MUSL_ARCH.so.1"
+ln -sf "ld-musl-$MUSL_ARCH.so.1" "/out/tor/lib/libc.musl-$MUSL_ARCH.so.1"
 chown -R "$OUT_UID:$OUT_GID" /out/tor /out/notices

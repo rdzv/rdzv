@@ -6,7 +6,7 @@ import pytest
 
 from tools.assemble import assemble, installer
 from tools.build import INPUTS, PLATFORMS
-from tools.update import refresh_python
+from tools.update import refresh_python, include_cffi_source
 
 
 def fixture_assets(path):
@@ -73,3 +73,12 @@ def test_python_update_requires_all_architectures_and_published_hashes():
     release['assets'][0]['digest'] = None
     with pytest.raises(ValueError, match='digest'):
         refresh_python(inputs, release)
+
+
+def test_lock_keeps_armv7_source_digest_without_executing_source(monkeypatch):
+    digest = 'e' * 64
+    monkeypatch.setattr('tools.update.fetch', lambda url: json.dumps(dict(urls=[dict(
+        packagetype='sdist', filename='cffi-2.1.1.tar.gz', digests=dict(sha256=digest))])).encode())
+    updated = include_cffi_source('cffi==2.1.1 \\\n    --hash=sha256:' + 'b' * 64 + '\n')
+    assert '--hash=sha256:' + digest + ' \\\n' in updated
+    assert '--hash=sha256:' + 'b' * 64 in updated
