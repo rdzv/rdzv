@@ -23,6 +23,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write
+      actions: write
     outputs:
       build: ${{ steps.inputs.outputs.build }}
       commit: ${{ steps.inputs.outputs.commit }}
@@ -30,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -57,6 +58,10 @@ jobs:
             git commit -m 'Refresh runtime dependencies'
             gh auth setup-git
             git push https://github.com/rdzv/rdzv.git HEAD:main
+            # Start a fresh event at the new commit so build provenance identifies
+            # the updated inputs rather than the schedule's original commit.
+            gh workflow run release.yml --repo rdzv/rdzv --ref main
+            BUILD=false
           elif [ "$EVENT" = schedule ]; then
             CURRENT=$(python -m tools.current)
             if [ "$CURRENT" = true ]; then BUILD=false; fi

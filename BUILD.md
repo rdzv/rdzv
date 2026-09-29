@@ -14,6 +14,8 @@ Official runtime bundles are built on standard GitHub-hosted runners. The source
 6. Assemble and attest the complete release, upload into a draft, download and verify every asset, then publish.
 7. Advance the generated `release` branch to the newly published bootstrap scripts.
 
+When a dependency check creates a commit, it dispatches a fresh build workflow at that commit. This keeps the attested source identity aligned with the files actually built.
+
 Build identifiers are `APP_VERSION-build.RUN_NUMBER`. A dependency-only refresh receives a new build identifier and a separate runtime cache; the application version changes when the application changes. Published bundles are never overwritten. A failed build does not advance the public bootstrap scripts.
 
 GitHub schedules are best-effort and may be disabled after 60 days of repository inactivity. Check the Actions page for failed or disabled runs; manual dispatch is available for recovery.
