@@ -1,0 +1,24 @@
+name: Product checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install --require-hashes -r requirements.lock
+          python -m pip install --no-deps -e .
+          python -m pip install 'pytest>=8,<9' 'pytest-asyncio>=1,<2' pyte==0.8.2 semgrep==1.156.0
+      - run: python -m pytest -q
+      - run: semgrep --config p/python --config p/security-audit --error --metrics=off --exclude tests .

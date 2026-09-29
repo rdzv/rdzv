@@ -1,0 +1,17 @@
+{
+  "python_series": "3.12",
+  "python_release": "20260924",
+  "python_version": "3.12.14",
+  "python": {
+    "x86_64": {"triple": "x86_64-unknown-linux-gnu", "sha256": "269b2c99e4db15b242bf01832f4fea1e8f1a664f273cff519393f296e9820b41"},
+    "aarch64": {"triple": "aarch64-unknown-linux-gnu", "sha256": "c8499b61252c433280f134df954464d19811527b31cb920c35fc6967c1222e35"},
+    "armv7l": {"triple": "armv7-unknown-linux-gnueabihf", "sha256": "72cb9e8053f88d0b9ab8039610afba635f8a8e158225f9316af5722c35930725"}
+  },
+  "tor": {
+    "version": "0.4.9.13",
+    "sha512": "079252c1ef8a467fd151a749481f59ac9463881cfd9e0e950821f596508c0477192eb5ed77d475c9945245ac5e0f35cb4b921cdfd406e4588b447625defa4d0c"
+  },
+  "alpine": "alpine:3.22@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8",
+  "ubuntu": "ubuntu:22.04@sha256:b8b6ee6aa931ecd9d0d952abc34dc0e5f7c6a30c6bb71b079fe399fde0329c02",
+  "binfmt": "tonistiigi/binfmt@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0"
+}
